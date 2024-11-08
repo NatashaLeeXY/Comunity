@@ -4,7 +4,6 @@ class UsersController < ApplicationController
 
   # GET /users or /users.json
   def index
-    # Render the login form here
     @user = User.new  # Initialize a new user for the login form
   end
 
@@ -20,12 +19,17 @@ class UsersController < ApplicationController
     respond_to do |format|
       if @user.save
         session[:user_username] = @user.username
-        format.html { redirect_to root_path, notice: "Profile successfully created!" }
+        format.html { redirect_to user_path(username: @user.username), notice: "Profile successfully created!" } # Redirect to the user's profile page
       else
         flash.now[:alert] = @user.errors.full_messages.join(", ")
         format.html { render :new, status: :unprocessable_entity }
       end
     end
+  end
+
+  # GET /users/:username - User profile
+  def show
+    @favorites = @user.favorites.includes(:organization) # Load user's favorites and associated organizations
   end
 
   # POST /userlogin - Login action

@@ -14,7 +14,7 @@ puts "Seeding admins..."
 # Create sample admins
 Admin.find_or_create_by!(username: "admin1") do |admin|
   admin.email = "admin1@example.com"
-  admin.firstname = "Admin"
+  admin.firstName = "Admin"
   admin.password_digest = "adminpass123"
 end
 
@@ -287,6 +287,19 @@ Event.find_or_create_by!(title: "Back-to-School Supply Drive", eventDate: Date.t
   event.user_id = "user6"
   event.admin_id = "admin"
 end
+
+# ... (previous seeding code)
+
+puts "Seeding favorites..."
+
+# Create sample favorites for users
+user1 = User.find_by!(username: "user1")
+user2 = User.find_by!(username: "user2")
+
+Favorite.find_or_create_by!(user: user1, organization: Organization.find_by!(email: "org1@example.com"))
+Favorite.find_or_create_by!(user: user1, organization: Organization.find_by!(email: "org2@example.com"))
+Favorite.find_or_create_by!(user: user2, organization: Organization.find_by!(email: "org3@example.com"))
+Favorite.find_or_create_by!(user: user2, organization: Organization.find_by!(email: "org4@example.com"))
 
 puts "Finished seeding events!"
 

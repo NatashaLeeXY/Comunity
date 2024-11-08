@@ -1,70 +1,38 @@
 class FavoritesController < ApplicationController
-  before_action :set_favorite, only: %i[ show edit update destroy ]
+  before_action :authenticate_user!
+  before_action :set_organization, only: [:create]
 
-  # GET /favorites or /favorites.json
   def index
-    @favorites = Favorite.all
+    @favorites = @current_user.favorites.includes(:organization)
+    Rails.logger.info "Favorites for user #{@current_user.username}: #{@favorites.inspect}"
   end
 
-  # GET /favorites/1 or /favorites/1.json
-  def show
-  end
-
-  # GET /favorites/new
-  def new
-    @favorite = Favorite.new
-  end
-
-  # GET /favorites/1/edit
-  def edit
-  end
-
-  # POST /favorites or /favorites.json
   def create
-    @favorite = Favorite.new(favorite_params)
+    Rails.logger.info "Current user: #{@current_user.inspect}" # Debug line
+    Rails.logger.info "Create action called for favoriting"
+    @favorite = @current_user.favorites.new(organization: @organization)
 
-    respond_to do |format|
-      if @favorite.save
-        format.html { redirect_to @favorite, notice: "Favorite was successfully created." }
-        format.json { render :show, status: :created, location: @favorite }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @favorite.errors, status: :unprocessable_entity }
-      end
-    end
-  end
+    Rails.logger.info "Trying to save favorite: #{@favorite.inspect}"
 
-  # PATCH/PUT /favorites/1 or /favorites/1.json
-  def update
-    respond_to do |format|
-      if @favorite.update(favorite_params)
-        format.html { redirect_to @favorite, notice: "Favorite was successfully updated." }
-        format.json { render :show, status: :ok, location: @favorite }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @favorite.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # DELETE /favorites/1 or /favorites/1.json
-  def destroy
-    @favorite.destroy!
-
-    respond_to do |format|
-      format.html { redirect_to favorites_path, status: :see_other, notice: "Favorite was successfully destroyed." }
-      format.json { head :no_content }
+    if @favorite.save
+      flash[:notice] = "Added to favorites!"
+      redirect_to favorites_path
+    else
+      flash[:alert] = "Unable to add to favorites."
+      redirect_to request.referer || root_path
     end
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_favorite
-      @favorite = Favorite.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def favorite_params
-      params.fetch(:favorite, {})
+  def set_organization
+    # Ensure the organization is correctly set based on the ID parameter
+    @organization = Organization.find_by(id: params[:favorite][:organizationID_id])
+    Rails.logger.info "Organization to add: #{@organization.inspect}"
+
+    unless @organization
+      flash[:alert] = "Organization not found."
+      redirect_to root_path
     end
+  end
 end

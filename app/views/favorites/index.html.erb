@@ -1,12 +1,12 @@
-<h1>Favorites</h1>
+<h1>Your Favorites</h1>
 
-<div id="favorites">
+<% if @favorites.any? %>
   <% @favorites.each do |favorite| %>
-    <%= render favorite %>
-    <p>
-      <%= link_to "Show this favorite", favorite %>
-    </p>
+    <div class="favorite">
+      <h2><%= favorite.organization.org_name %></h2>
+      <p><%= favorite.organization.servicesSummary %></p>
+    </div>
   <% end %>
-</div>
-
-<%= link_to "New favorite", new_favorite_path %>
+<% else %>
+  <p>No favorites yet!</p>
+<% end %>
